@@ -1,0 +1,46 @@
+<div class="text-right mb-3">
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdown-requirement-methods" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-plus-circle"></i> {{#str}}addrequirement, local_superbadges{{/str}}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdown-requirement-methods">
+            {{#availablemethods}}
+                <button class="dropdown-item" type="button" data-action="add-requirement-modal" data-key="{{key}}">{{name}}</button>
+            {{/availablemethods}}
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-hover table-requirements">
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">{{#str}}method, local_superbadges{{/str}}</th>
+        <th scope="col">{{#str}}target, local_superbadges{{/str}}</th>
+        <th scope="col">{{#str}}value, local_superbadges{{/str}}</th>
+        <th scope="col">{{#str}}actions, local_superbadges{{/str}}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#requirements}}
+        <tr>
+            <th scope="row">{{{id}}}</th>
+            <td>{{{method}}}</td>
+            <td>{{{target}}}</td>
+            <td>{{{value}}}</td>
+            <td style="width: 120px; text-align: center;">
+                <a href="#" data-id="{{id}}" class="btn btn-danger btn-sm delete-requirement"><i class="fa fa-trash-o"></i></a>
+            </td>
+        </tr>
+    {{/requirements}}
+    </tbody>
+</table>
+
+{{#js}}
+
+    require(['local_superbadges/requirement/add', 'local_superbadges/requirement/delete'], function(AddRequirement, DeleteRequirement) {
+        AddRequirement.init('[data-action=add-requirement-modal]', {{courseid}}, {{badgeid}});
+
+        DeleteRequirement.init('.delete-requirement');
+    });
+{{/js}}
