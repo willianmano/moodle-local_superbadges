@@ -60,7 +60,7 @@ class issuer {
             return false;
         }
 
-        $this->deliver_badge($userid, $mdlbadge->id);
+        return $this->deliver_badge($userid, $mdlbadge->id);
     }
 
     public function user_already_have_badge(int $userid, int $badgeid): bool {

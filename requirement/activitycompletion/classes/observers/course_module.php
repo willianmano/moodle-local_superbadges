@@ -33,7 +33,19 @@ namespace superbadgesrequirement_activitycompletion\observers;
  */
 class course_module {
     public static function completed(\core\event\course_module_completion_updated $event) {
-        echo "to aqui. Call back de activitycompletion";
-        $a = 'a';
+        global $DB;
+
+        $requirements = $DB->get_records('local_superbadges_requirements', [
+            'method' => 'activitycompletion', 'target' => $event->contextinstanceid
+        ]);
+
+        if (!$requirements) {
+            return;
+        }
+
+        $issuer = new \local_superbadges\util\issuer();
+        foreach ($requirements as $requirement) {
+            $issuer->deliver($requirement->badgeid, $event->relateduserid);
+        }
     }
 }

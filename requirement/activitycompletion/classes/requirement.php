@@ -42,58 +42,41 @@ class requirement extends \local_superbadges\requirement {
     ];
 
     public function user_achieved_requirement(int $userid, \stdClass $requirement): bool {
-        $totalaccessdays = $this->count_course_access_days();
-
-        $requireddays = (int) $this->badgerequirement->value;
-        if ($totalaccessdays >= $requireddays) {
+        if ($this->is_activity_complete($userid, $requirement->target)) {
             return true;
         }
 
         return false;
     }
 
-    public function get_user_requirement_progress(int $userid, \stdClass $requirement): int {
-        $totalaccessdays = $this->count_course_access_days();
+    public function is_activity_complete(int $userid, int $cmid): bool {
+        global $DB;
 
-        if ($totalaccessdays == 0) {
-            return 0;
+        $completion = $DB->get_record('course_modules_completion', ['coursemoduleid' => $cmid, 'userid' => $userid]);
+
+        if ($completion) {
+            return (bool) $completion->completionstate;
         }
 
-        $requireddays = (int) $this->badgerequirement->value;
-        if ($totalaccessdays >= $requireddays) {
+        return false;
+    }
+
+    public function get_user_requirement_progress(int $userid, \stdClass $requirement): int {
+        $iscomplete = $this->is_activity_complete($userid, $requirement->target);
+
+        if ($iscomplete) {
             return 100;
         }
 
-        return (int)($totalaccessdays * 100 / $this->badgerequirement->value);
-    }
-
-    private function count_course_access_days() {
-        global $DB;
-
-        // TODO: adicionar context para poder diminuir escopo da query e aumentar performance
-        $sql = 'SELECT
-                    id,
-                    DATE(FROM_UNIXTIME(timecreated)) as date
-                FROM {logstore_standard_log}
-                WHERE userid = :userid AND courseid = :courseid AND target = :target
-                GROUP BY date
-                ORDER BY date';
-
-        $records = $DB->get_records_sql($sql, ['userid' => $this->userid, 'courseid' => $this->badgerequirement->courseid, 'target' => 'course']);
-
-        if (!$records) {
-            return 0;
-        }
-
-        return count($records);
+        return 0;
     }
 
     public function get_user_requirement_progress_html(int $userid, \stdClass $requirement): string {
         $pluginname = get_string('pluginname', 'superbadgesrequirement_courseaccess');
 
-        $progress = $this->get_user_requirement_progress();
+        $progress = $this->get_user_requirement_progress($userid, $requirement);
 
-        $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $this->badgerequirement->value);
+        $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $requirement->value);
 
         return '<p class="mb-0">'.$pluginname.'
                         <a class="btn btn-link p-0"
