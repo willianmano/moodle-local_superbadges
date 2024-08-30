@@ -15,29 +15,52 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the superbadges element activitycompletion's core interaction API.
+ * This file contains the superbadges element courseaccess's core interaction API.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace superbadgesrequirement_activitycompletion;
+namespace superbadgesrequirement_courseaccess;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The superbadges element activitycompletion's core interaction API.
+ * The superbadges element courseaccess's core interaction API.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class badgerequirement extends \local_superbadges\requirement {
-    public function user_achieved_requirement(int $userid, \stdClass $requirement): bool {
-        $totalaccessdays = $this->count_course_access_days();
+class requirement extends \local_superbadges\requirement {
+    public static $eventstoobserve = [
+        'courseaccess' => [
+            'core\event\course_viewed',
+        ]
+    ];
 
-        $requireddays = (int) $this->badgerequirement->value;
+    public function save($data): \stdClass {
+        global $DB;
+
+        $requirement = new \stdClass();
+        $requirement->method = $data->method;
+        $requirement->badgeid = $data->badgeid;
+        $requirement->target = $data->courseid;
+        $requirement->value = $data->value;
+        $requirement->extras = null;
+        $requirement->timecreated = time();
+        $requirement->timemodified = time();
+
+        $requirement->id = $DB->insert_record('local_superbadges_requirements', $requirement);
+
+        return $requirement;
+    }
+
+    public function user_achieved_requirement(int $userid, \stdClass $requirement): bool {
+        $totalaccessdays = $this->count_course_access_days($userid, $requirement->target);
+
+        $requireddays = (int) $requirement->value;
         if ($totalaccessdays >= $requireddays) {
             return true;
         }
@@ -46,21 +69,21 @@ class badgerequirement extends \local_superbadges\requirement {
     }
 
     public function get_user_requirement_progress(int $userid, \stdClass $requirement): int {
-        $totalaccessdays = $this->count_course_access_days();
+        $totalaccessdays = $this->count_course_access_days($userid, $requirement->target);
 
         if ($totalaccessdays == 0) {
             return 0;
         }
 
-        $requireddays = (int) $this->badgerequirement->value;
+        $requireddays = (int) $requirement->value;
         if ($totalaccessdays >= $requireddays) {
             return 100;
         }
 
-        return (int)($totalaccessdays * 100 / $this->badgerequirement->value);
+        return (int)($totalaccessdays * 100 / $requirement->value);
     }
 
-    private function count_course_access_days() {
+    private function count_course_access_days(int $userid, int $courseid) {
         global $DB;
 
         // TODO: adicionar context para poder diminuir escopo da query e aumentar performance
@@ -72,7 +95,7 @@ class badgerequirement extends \local_superbadges\requirement {
                 GROUP BY date
                 ORDER BY date';
 
-        $records = $DB->get_records_sql($sql, ['userid' => $this->userid, 'courseid' => $this->badgerequirement->courseid, 'target' => 'course']);
+        $records = $DB->get_records_sql($sql, ['userid' => $userid, 'courseid' => $courseid, 'target' => 'course']);
 
         if (!$records) {
             return 0;
@@ -86,7 +109,7 @@ class badgerequirement extends \local_superbadges\requirement {
 
         $progress = $this->get_user_requirement_progress();
 
-        $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $this->badgerequirement->value);
+        $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $requirement->value);
 
         return '<p class="mb-0">'.$pluginname.'
                         <a class="btn btn-link p-0"

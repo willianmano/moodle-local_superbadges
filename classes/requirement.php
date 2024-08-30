@@ -49,6 +49,8 @@ abstract class requirement {
         return $requirement;
     }
 
+    public static $eventstoobserve = [];
+
     public abstract function user_achieved_requirement(int $userid, \stdClass $requirement): bool;
 
     public abstract function get_user_requirement_progress(int $userid, \stdClass $requirement): int;

@@ -72,11 +72,12 @@ class requirement extends external_api {
             // We always must call validate_context in a webservice.
             self::validate_context($context);
 
-            $requirementclass = "\superbadgesrequirement_{$serialiseddata->method}\badgerequirement";
+            $requirementclass = "\superbadgesrequirement_{$serialiseddata->method}\\requirement";
 
             $requirementinstance = new $requirementclass;
 
             $data = $requirementinstance->save($serialiseddata);
+            $data->pluginname = get_string("pluginname", "superbadgesrequirement_{$data->method}");
 
             return [
                 'message' => get_string('addrequirement_success', 'local_superbadges'),

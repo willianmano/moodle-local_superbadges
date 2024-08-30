@@ -15,40 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Badge requirement utility file.
+ * Pluguin events observers file.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_superbadges\util;
+defined('MOODLE_INTERNAL') || die();
 
-defined('MOODLE_INTERNAL') || die;
-
-/**
- * Badge requirement utility class.
- *
- * @package    local_superbadges
- * @copyright  2024 Willian Mano {@link https://conecti.me}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class requirement {
-    public function get_badge_requirements($badgeid) {
-        global $DB;
-
-        $records = $DB->get_records('local_superbadges_requirements', ['badgeid' => $badgeid]);
-
-        if (!$records) {
-            return false;
-        }
-
-        $records = array_map(function($record) {
-            $record->pluginname = get_string("pluginname", "superbadgesrequirement_{$record->method}");
-
-            return $record;
-        }, $records);
-
-        return array_values($records);
-    }
-}
+$observers = [
+    [
+        'eventname' => '\core\event\base',
+        'callback' => '\local_superbadges\observers\events::listen',
+        'internal' => false
+    ],
+];

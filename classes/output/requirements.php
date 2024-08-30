@@ -51,15 +51,14 @@ class requirements implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         $badgecriteriautil = new \local_superbadges\util\requirement();
 
+        $installedmethods = \core_plugin_manager::instance()->get_plugins_of_type('superbadgesrequirement');
+
         $availablemethods = [];
-        $installedrequirementsmethods = \core_plugin_manager::instance()->get_plugins_of_type('superbadgesrequirement');
-        if ($installedrequirementsmethods) {
-            foreach ($installedrequirementsmethods as $requirement) {
-                $availablemethods[] = [
-                    'key' => $requirement->name,
-                    'name' => $requirement->displayname
-                ];
-            }
+        foreach ($installedmethods as $method) {
+            $availablemethods[] = [
+                'key' => $method->name,
+                'name' => $method->displayname,
+            ];
         }
 
         return [

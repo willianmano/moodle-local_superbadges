@@ -15,40 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Badge requirement utility file.
+ * Event listener for dispatched event file.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_superbadges\util;
+namespace local_superbadges\observers;
 
 defined('MOODLE_INTERNAL') || die;
 
-/**
- * Badge requirement utility class.
- *
- * @package    local_superbadges
- * @copyright  2024 Willian Mano {@link https://conecti.me}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class requirement {
-    public function get_badge_requirements($badgeid) {
-        global $DB;
+use core\event\base as baseevent;
 
-        $records = $DB->get_records('local_superbadges_requirements', ['badgeid' => $badgeid]);
+class events {
+    public static function listen(baseevent $event) {
+        $eventclass = $event::class;
 
-        if (!$records) {
-            return false;
+        $events = self::get_subplugins_listeners();
+
+        if (!in_array($eventclass, $events)) {
+            return;
+        }
+    }
+
+    private static function get_subplugins_listeners() {
+        $installedmethods = \core_plugin_manager::instance()->get_plugins_of_type('superbadgesrequirement');
+
+        $data = [];
+        foreach ($installedmethods as $method) {
+            $classname = "superbadgesrequirement_{$method->name}\\requirement";
+
+            $data = array_merge($data, $classname::$eventstoobserve);
         }
 
-        $records = array_map(function($record) {
-            $record->pluginname = get_string("pluginname", "superbadgesrequirement_{$record->method}");
-
-            return $record;
-        }, $records);
-
-        return array_values($records);
+        return $data;
     }
 }

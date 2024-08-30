@@ -55,7 +55,7 @@ const addRequirementToTable = (data) => {
 
     let tableLine = $('<tr>' +
         '<th scope="row">'+data.id+'</th>' +
-        '<td>'+data.method+'</td>' +
+        '<td>'+data.pluginname+'</td>' +
         '<td>'+target +'</td>' +
         '<td>'+data.value+'</td>' +
         '<td style="width: 120px; text-align: center;">' +

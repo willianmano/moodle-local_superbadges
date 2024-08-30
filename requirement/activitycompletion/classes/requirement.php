@@ -15,41 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the superbadges element courseaccess's core interaction API.
+ * This file contains the superbadges element activitycompletion's core interaction API.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace superbadgesrequirement_courseaccess;
+namespace superbadgesrequirement_activitycompletion;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The superbadges element courseaccess's core interaction API.
+ * The superbadges element activitycompletion's core interaction API.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class badgerequirement extends \local_superbadges\requirement {
-    public function save($data): \stdClass {
-        global $DB;
-
-        $requirement = new \stdClass();
-        $requirement->method = $data->method;
-        $requirement->badgeid = $data->badgeid;
-        $requirement->target = $data->courseid;
-        $requirement->value = $data->value;
-        $requirement->extras = null;
-        $requirement->timecreated = time();
-        $requirement->timemodified = time();
-
-        $requirement->id = $DB->insert_record('local_superbadges_requirements', $requirement);
-
-        return $requirement;
-    }
+class requirement extends \local_superbadges\requirement {
+    public static $eventstoobserve = [
+        'activitycompletion' => [
+            'core\event\course_module_completion_updated',
+        ]
+    ];
 
     public function user_achieved_requirement(int $userid, \stdClass $requirement): bool {
         $totalaccessdays = $this->count_course_access_days();

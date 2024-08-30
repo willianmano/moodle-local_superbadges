@@ -49,6 +49,7 @@ class requirement extends \core_form\dynamic_form {
     public function set_data_for_dynamic_submission(): void {
         $this->set_data([
             'method' => $this->optional_param('method', 'activitycompletion', PARAM_TEXT),
+            'value' => $this->optional_param('value', 1, PARAM_INT),
         ]);
     }
 
@@ -82,10 +83,10 @@ class requirement extends \core_form\dynamic_form {
             $options[$othercm->id] = $othercm->name;
         }
 
-        $mform->addElement('select', 'value', get_string('activity', 'superbadgesrequirement_activitycompletion'), $options);
-        $mform->addHelpButton('value', 'activity', 'superbadgesrequirement_activitycompletion');
-        $mform->addRule('value', null, 'required', null, 'client');
-        $mform->setType('value', PARAM_TEXT);
+        $mform->addElement('select', 'target', get_string('activity', 'superbadgesrequirement_activitycompletion'), $options);
+        $mform->addHelpButton('target', 'activity', 'superbadgesrequirement_activitycompletion');
+        $mform->addRule('target', null, 'required', null, 'client');
+        $mform->setType('target', PARAM_TEXT);
 
         // Hidden elements.
         $mform->addElement('hidden', 'courseid');
@@ -98,6 +99,9 @@ class requirement extends \core_form\dynamic_form {
 
         $mform->addElement('hidden', 'method');
         $mform->setType('method', PARAM_TEXT);
+
+        $mform->addElement('hidden', 'value');
+        $mform->setType('value', PARAM_INT);
     }
 
     public function validation($data, $files) {
