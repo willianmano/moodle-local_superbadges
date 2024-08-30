@@ -35,8 +35,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class requirement extends \local_superbadges\requirement {
     public static $eventstoobserve = [
-        'activitycompletion' => [
-            'core\event\course_module_completion_updated',
+        [
+            'eventname' => 'core\event\course_module_completion_updated',
+            'callback' => '\superbadgesrequirement_activitycompletion\observers\course_module::completed'
         ]
     ];
 

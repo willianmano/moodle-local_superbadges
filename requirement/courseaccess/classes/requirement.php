@@ -35,8 +35,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class requirement extends \local_superbadges\requirement {
     public static $eventstoobserve = [
-        'courseaccess' => [
-            'core\event\course_viewed',
+        [
+            'eventname' => 'core\event\course_viewed',
+            'callback' => '\superbadgesrequirement_courseaccess\observers\course::viewed'
         ]
     ];
 
@@ -107,7 +108,7 @@ class requirement extends \local_superbadges\requirement {
     public function get_user_requirement_progress_html(int $userid, \stdClass $requirement): string {
         $pluginname = get_string('pluginname', 'superbadgesrequirement_courseaccess');
 
-        $progress = $this->get_user_requirement_progress();
+        $progress = $this->get_user_requirement_progress($userid, $requirement);
 
         $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $requirement->value);
 

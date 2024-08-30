@@ -15,49 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event listener for dispatched event file.
+ * Course module listener file.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_superbadges\observers;
-
-defined('MOODLE_INTERNAL') || die;
-
-use core\event\base as baseevent;
+namespace superbadgesrequirement_activitycompletion\observers;
 
 /**
- * Event listener for dispatched event class.
+ * Course module listener class.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class events {
-    public static function listen(baseevent $event) {
-        $eventclass = $event::class;
-
-        $observers = self::get_subplugins_observers();
-
-        foreach ($observers as $observer) {
-            if ($observer['eventname'] === $eventclass) {
-                call_user_func($observer['callback'], $event);
-            }
-        }
-    }
-
-    private static function get_subplugins_observers() {
-        $installedmethods = \core_plugin_manager::instance()->get_plugins_of_type('superbadgesrequirement');
-
-        $data = [];
-        foreach ($installedmethods as $method) {
-            $classname = "superbadgesrequirement_{$method->name}\\requirement";
-
-            $data = array_merge($data, $classname::$eventstoobserve);
-        }
-
-        return $data;
+class course_module {
+    public static function completed(\core\event\course_module_completion_updated $event) {
+        echo "to aqui. Call back de activitycompletion";
+        $a = 'a';
     }
 }

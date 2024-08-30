@@ -15,49 +15,37 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event listener for dispatched event file.
+ * Event listener file.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_superbadges\observers;
-
-defined('MOODLE_INTERNAL') || die;
-
-use core\event\base as baseevent;
+namespace superbadgesrequirement_courseaccess\observers;
 
 /**
- * Event listener for dispatched event class.
+ * Event listener class.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class events {
-    public static function listen(baseevent $event) {
-        $eventclass = $event::class;
+class course {
+    public static function viewed(\core\event\course_viewed $event) {
+        global $DB;
 
-        $observers = self::get_subplugins_observers();
+        $requirements = $DB->get_records('local_superbadges_requirements', [
+            'method' => 'courseaccess', 'target' => $event->courseid
+        ]);
 
-        foreach ($observers as $observer) {
-            if ($observer['eventname'] === $eventclass) {
-                call_user_func($observer['callback'], $event);
-            }
-        }
-    }
-
-    private static function get_subplugins_observers() {
-        $installedmethods = \core_plugin_manager::instance()->get_plugins_of_type('superbadgesrequirement');
-
-        $data = [];
-        foreach ($installedmethods as $method) {
-            $classname = "superbadgesrequirement_{$method->name}\\requirement";
-
-            $data = array_merge($data, $classname::$eventstoobserve);
+        if (!$requirements) {
+            return;
         }
 
-        return $data;
+        $issuer = new \local_superbadges\util\issuer();
+        foreach ($requirements as $requirement) {
+            $issuer->deliver($requirement->badgeid, $event->userid);
+        }
     }
 }
