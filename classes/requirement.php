@@ -55,5 +55,5 @@ abstract class requirement {
 
     public abstract function get_user_requirement_progress(int $userid, \stdClass $requirement): int;
 
-    public abstract function get_user_requirement_progress_html(int $userid, \stdClass $requirement): string;
+    public abstract function get_user_requirement_progress_data(int $userid, \stdClass $requirement): array;
 }

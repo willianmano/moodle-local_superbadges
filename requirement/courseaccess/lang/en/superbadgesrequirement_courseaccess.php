@@ -26,4 +26,4 @@ $string['pluginname'] = 'Course access';
 $string['daystoaccess'] = 'Days to access';
 $string['daystoaccess_help'] = 'How many days the user needs to access the course to complete this requirement.';
 $string['privacy:metadata'] = 'The Course access plugin does not store any personal data.';
-$string['criteriaprogresdesc'] = 'To complete this criteria you need to access the course <b>{$a}</b> days.';
+$string['requirementprogresdesc'] = 'To complete this requirement you need to access the course for <b>{$a}</b> days.';

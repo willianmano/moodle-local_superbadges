@@ -35,6 +35,16 @@ function local_superbadges_extend_navigation_course($navigation, $course, $conte
             'superbadgesbadgesindex',
             new pix_icon('t/award', '')
         );
+    } else {
+        $url = new moodle_url('/local/superbadges/mybadges.php', ['id' => $course->id]);
+        $navigation->add(
+            get_string('pluginname', 'local_superbadges'),
+            $url,
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'superbadgesbadgesmybadges',
+            new pix_icon('t/award', '')
+        );
     }
 }
 

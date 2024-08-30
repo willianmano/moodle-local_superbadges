@@ -71,28 +71,25 @@ class requirement extends \local_superbadges\requirement {
         return 0;
     }
 
-    public function get_user_requirement_progress_html(int $userid, \stdClass $requirement): string {
-        $pluginname = get_string('pluginname', 'superbadgesrequirement_courseaccess');
+    public function get_user_requirement_progress_data(int $userid, \stdClass $requirement): array {
+        $pluginname = get_string('pluginname', 'superbadgesrequirement_activitycompletion');
 
         $progress = $this->get_user_requirement_progress($userid, $requirement);
 
-        $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $requirement->value);
+        $activityname = $this->get_activity_name($requirement->target);
 
-        return '<p class="mb-0">'.$pluginname.'
-                        <a class="btn btn-link p-0"
-                           role="button"
-                           data-container="body"
-                           data-toggle="popover"
-                           data-placement="right"
-                           data-html="true"
-                           tabindex="0"
-                           data-trigger="focus"
-                           data-content="<div class=\'no-overflow\'><p>'.$requirementprogresdesc.'</p></div>">
-                            <i class="icon fa fa-info-circle text-info fa-fw " title="'.$pluginname.'" role="img" aria-label="'.$pluginname.'"></i>
-                        </a>
-                    </p>
-                    <div class="progress ml-0">
-                        <div class="progress-bar" role="progressbar" style="width: '.$progress.'%" aria-valuenow="'.$progress.'" aria-valuemin="0" aria-valuemax="100">'.$progress.'%</div>
-                    </div>';
+        $progresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_activitycompletion', $activityname);
+
+        return [
+            'pluginname' => $pluginname,
+            'progress' => $progress,
+            'progresdesc' => $progresdesc,
+        ];
+    }
+
+    private function get_activity_name(int $cmid): string {
+        list(, $coursemodule) = get_course_and_cm_from_cmid($cmid);
+
+        return $coursemodule->name;
     }
 }

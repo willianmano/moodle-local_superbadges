@@ -1,0 +1,17 @@
+<h2>{{#str}}coursesuperbadges, local_superbadges{{/str}}</h2>
+
+{{#badges}}
+    <div class="d-flex align-items-center border p-2 my-2">
+        <img src="{{{badgeimage}}}" alt="{{{name}}}" class="superbadge">
+        <div class="info ml-2 w-100">
+            <h5>{{{name}}}</h5>
+            <p>{{{description}}}</p>
+            <p class="border-bottom mb-0">
+                <b>{{#str}}requirements, local_superbadges{{/str}}</b>
+            </p>
+            {{#requirementshtml}}
+                {{{.}}}
+            {{/requirementshtml}}
+        </div>
+    </div>
+{{/badges}}

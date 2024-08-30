@@ -49,3 +49,5 @@ $string['target'] = 'Target';
 $string['value'] = 'Value';
 $string['addrequirement_success'] = 'Requirement successfully added';
 $string['deleterequirement_success'] = 'Requirement successfully deleted';
+
+$string['coursesuperbadges'] = 'Course super badges';

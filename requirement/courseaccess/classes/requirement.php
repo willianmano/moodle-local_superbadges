@@ -105,28 +105,17 @@ class requirement extends \local_superbadges\requirement {
         return count($records);
     }
 
-    public function get_user_requirement_progress_html(int $userid, \stdClass $requirement): string {
+    public function get_user_requirement_progress_data(int $userid, \stdClass $requirement): array {
         $pluginname = get_string('pluginname', 'superbadgesrequirement_courseaccess');
 
         $progress = $this->get_user_requirement_progress($userid, $requirement);
 
-        $requirementprogresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $requirement->value);
+        $progresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_courseaccess', $requirement->value);
 
-        return '<p class="mb-0">'.$pluginname.'
-                        <a class="btn btn-link p-0"
-                           role="button"
-                           data-container="body"
-                           data-toggle="popover"
-                           data-placement="right"
-                           data-html="true"
-                           tabindex="0"
-                           data-trigger="focus"
-                           data-content="<div class=\'no-overflow\'><p>'.$requirementprogresdesc.'</p></div>">
-                            <i class="icon fa fa-info-circle text-info fa-fw " title="'.$pluginname.'" role="img" aria-label="'.$pluginname.'"></i>
-                        </a>
-                    </p>
-                    <div class="progress ml-0">
-                        <div class="progress-bar" role="progressbar" style="width: '.$progress.'%" aria-valuenow="'.$progress.'" aria-valuemin="0" aria-valuemax="100">'.$progress.'%</div>
-                    </div>';
+        return [
+            'pluginname' => $pluginname,
+            'progress' => $progress,
+            'progresdesc' => $progresdesc,
+        ];
     }
 }

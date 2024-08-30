@@ -30,7 +30,7 @@ $course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_course_login($course, true);
 
-$context = context_course::instance($course->id);
+$context = \core\context\course::instance($course->id);
 
 if (!has_capability('moodle/course:update', $context)) {
     redirect(new moodle_url('/course/index.php', ['id' => $id]), \core\notification::error('Illegal access!'));

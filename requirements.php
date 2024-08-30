@@ -35,7 +35,7 @@ $course = $DB->get_record('course', ['id' => $superbadge->courseid], '*', MUST_E
 
 require_course_login($course);
 
-$context = context_course::instance($course->id);
+$context = \core\context\course::instance($course->id);
 
 if (!has_capability('moodle/course:update', $context)) {
     redirect(new moodle_url('/course/view.php', ['id' => $id]), \core\notification::error('Illegal access!'));

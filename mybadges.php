@@ -15,15 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'evokegamebadgecriteria_activitycompletion', language 'en'.
+ * Index badges config page
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Activity completion';
-$string['privacy:metadata'] = 'The Activity completion plugin does not store any personal data.';
-$string['activity'] = 'Activity';
-$string['activity_help'] = 'Which activity the user needs to complete to complete this requirement.';
-$string['requirementprogresdesc'] = 'To complete this requirement you need to complete the activity <b>{$a}</b>.';
+require(__DIR__.'/../../config.php');
+
+// Course module id.
+$id = required_param('id', PARAM_INT);
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
+
+require_course_login($course, true);
+
+$context = \core\context\course::instance($course->id);
+
+$PAGE->set_url('/local/superbadges/mybadges.php', ['id' => $course->id]);
+$PAGE->set_title(format_string($course->fullname));
+$PAGE->set_heading(format_string($course->fullname));
+$PAGE->set_context($context);
+
+echo $OUTPUT->header();
+
+$renderer = $PAGE->get_renderer('local_superbadges');
+
+$contentrenderable = new \local_superbadges\output\mybadges($course, $context);
+
+echo $renderer->render($contentrenderable);
+
+echo $OUTPUT->footer();

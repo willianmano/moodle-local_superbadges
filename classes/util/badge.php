@@ -68,13 +68,13 @@ class badge {
         }
 
         $badges = [];
-        foreach ($coursebadges as $coursebadge) {
+        foreach ($coursebadges as $badge) {
             $badges[] = [
-                'id' => $coursebadge->id,
-                'badgeid' => $coursebadge->badgeid,
-                'name' => $coursebadge->name,
-                'description' => $coursebadge->description,
-                'badgeimage' => $this->get_badge_image_url($contextid, $coursebadge->badgeid),
+                'id' => $badge->id,
+                'badgeid' => $badge->badgeid,
+                'name' => $badge->name,
+                'description' => $badge->description,
+                'badgeimage' => $this->get_badge_image_url($contextid, $badge->badgeid),
                 'awarded' => false
             ];
         }
@@ -97,26 +97,7 @@ class badge {
         return $badges;
     }
 
-    public function get_course_badges($courseid) {
-        global $DB;
-
-        $sql = 'SELECT eb.*, b.description
-                FROM {local_superbadges_badges} eb
-                INNER JOIN {badge} b ON b.id = eb.badgeid
-                WHERE b.courseid = :courseid';
-
-        $params = ['courseid' => $courseid];
-
-        $records = $DB->get_records_sql($sql, $params);
-
-        if (!$records) {
-            return false;
-        }
-
-        return array_values($records);
-    }
-
-    public function get_user_course_badges($userid, $courseid) {
+    public function get_user_course_badges(int $userid, int $courseid) {
         // Get badges fro badgelib.
         $userbadges = badges_get_user_badges($userid, $courseid);
 
@@ -127,7 +108,7 @@ class badge {
         return false;
     }
 
-    public function get_badge_image_url($contextid, $badgeid) {
+    public function get_badge_image_url(int $contextid, int $badgeid) {
         $imageurl = moodle_url::make_pluginfile_url($contextid, 'badges', 'badgeimage', $badgeid, '/', 'f1', false);
 
         $imageurl->param('refresh', rand(1, 10000));
@@ -135,10 +116,11 @@ class badge {
         return $imageurl;
     }
 
-    public function get_superbadges($courseid) {
+    public function get_course_badges($courseid) {
         global $DB;
 
-        $sql = 'SELECT sb.id, b.name FROM {local_superbadges_badges} sb
+        $sql = 'SELECT sb.*, b.name, b.description
+                FROM {local_superbadges_badges} sb
                 INNER JOIN {badge} b ON b.id = sb.badgeid
                 WHERE b.courseid = :courseid';
 
@@ -151,8 +133,8 @@ class badge {
         return array_values($records);
     }
 
-    public function get_user_course_badges_with_requirements($userid, $courseid, $contextid) {
-        $badgecriteria = new requirement();
+    public function get_user_course_badges_with_requirements(int $userid, int $courseid, int $contextid) {
+        $badgerequirement = new requirement();
 
         $badges = $this->get_course_badges_with_user_award($userid, $courseid, $contextid);
 
@@ -161,28 +143,28 @@ class badge {
         }
 
         foreach ($badges as $key => $badge) {
-            $badgecriterias = $badgecriteria->get_badge_requirements($badge['id']);
+            $badgerequirements = $badgerequirement->get_badge_requirements($badge['id']);
 
-            if (!$badgecriterias) {
+            if (!$badgerequirements) {
                 unset($badges[$key]);
 
                 continue;
             }
 
-            $criteriasprogress = [];
-            foreach ($badgecriterias as $criteria) {
-                $criteriaclass = '\superbadgesrequirement_' . $criteria->method . '\requirement';
+            $badges[$key]['requirements'] = [];
+            foreach ($badgerequirements as $requirement) {
+                $requirementclass = '\superbadgesrequirement_' . $requirement->method . '\requirement';
 
-                if (!class_exists($criteriaclass)) {
+                if (!class_exists($requirementclass)) {
                     continue;
                 }
 
-                $criteriamethod = new $criteriaclass($userid, $criteria);
+                $requirementmethod = new $requirementclass($userid, $requirement);
 
-                $criteriasprogress[] = $criteriamethod->get_user_criteria_progress_html();
+                $requirement->progressdata = $requirementmethod->get_user_requirement_progress_data($userid, $requirement);
+
+                $badges[$key]['requirements'][] = $requirement;
             }
-
-            $badges[$key]['criteriasprogress'] = $criteriasprogress;
         }
 
         return array_values($badges);

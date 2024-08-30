@@ -36,11 +36,15 @@ use renderer_base;
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class index implements renderable, templatable {
+class mybadges implements renderable, templatable {
+    protected $user;
     protected $course;
     protected $context;
 
     public function __construct($course, $context) {
+        global $USER;
+
+        $this->user = $USER;
         $this->course = $course;
         $this->context = $context;
     }
@@ -48,10 +52,31 @@ class index implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         $badgeutil = new badge();
 
+        $badges = $badgeutil->get_user_course_badges_with_requirements($this->user->id, $this->course->id, $this->context->id);
+
+        foreach ($badges as $key => $badge) {
+            foreach ($badge['requirements'] as $requirement) {
+                $html = $output->render_from_template($this->get_mustache_file($requirement->method), $requirement->progressdata);
+
+                $badges[$key]['requirementshtml'] = !isset($badges[$key]['requirementshtml']) ? $html : $badges[$key]['requirementshtml'] . $html;
+            }
+        }
+
         return [
             'contextid' => $this->context->id,
             'courseid' => $this->course->id,
-            'badges' => $badgeutil->get_course_badges($this->course->id)
+            'badges' => $badges
         ];
+    }
+
+    private function get_mustache_file($method) {
+        global $CFG;
+
+        $file = "{$CFG->dirroot}/local/superbadges/requirement/{$method}/templates/progress.mustache";
+        if (file_exists($file)) {
+            return "superbadgesrequirement_{$method}/progress";
+        }
+
+        return "local_superbadges/progress";
     }
 }
