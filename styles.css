@@ -1,0 +1,17 @@
+@media (min-width: 576px) {
+    #page-local-superbadges-mybadges .card-columns {
+        column-count: 1;
+    }
+}
+
+@media (min-width: 768px) {
+    #page-local-superbadges-mybadges .card-columns {
+        column-count: 2;
+    }
+}
+
+@media (min-width: 1200px) {
+    #page-local-superbadges-mybadges .card-columns {
+        column-count: 3;
+    }
+}
