@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the superbadges element activitycompletion's core interaction API.
+ * This file contains the superbadges element coursecompletion's core interaction API.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace superbadgesrequirement_activitycompletion;
+namespace superbadgesrequirement_coursecompletion;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The superbadges element activitycompletion's core interaction API.
+ * The superbadges element coursecompletion's core interaction API.
  *
  * @package    local_superbadges
  * @copyright  2024 Willian Mano {@link https://conecti.me}
@@ -36,33 +36,33 @@ defined('MOODLE_INTERNAL') || die();
 class requirement extends \local_superbadges\requirement {
     public static $eventstoobserve = [
         [
-            'eventname' => 'core\event\course_module_completion_updated',
-            'callback' => '\superbadgesrequirement_activitycompletion\observers\course_module::completed'
+            'eventname' => 'core\event\course_completed',
+            'callback' => '\superbadgesrequirement_coursecompletion\observers\course::completed'
         ]
     ];
 
     public function user_achieved_requirement(int $userid, \stdClass $requirement): bool {
-        if ($this->is_activity_complete($userid, $requirement->target)) {
+        if ($this->is_course_complete($userid, $requirement->target)) {
             return true;
         }
 
         return false;
     }
 
-    public function is_activity_complete(int $userid, int $cmid): bool {
+    public function is_course_complete(int $userid, int $courseid): bool {
         global $DB;
 
-        $completion = $DB->get_record('course_modules_completion', ['coursemoduleid' => $cmid, 'userid' => $userid]);
+        $completion = $DB->get_record('course_completions', ['course' => $courseid, 'userid' => $userid]);
 
         if ($completion) {
-            return (bool) $completion->completionstate;
+            return (bool) $completion->timecompleted;
         }
 
         return false;
     }
 
     public function get_user_requirement_progress(int $userid, \stdClass $requirement): int {
-        $iscomplete = $this->is_activity_complete($userid, $requirement->target);
+        $iscomplete = $this->is_course_complete($userid, $requirement->target);
 
         if ($iscomplete) {
             return 100;
@@ -72,13 +72,13 @@ class requirement extends \local_superbadges\requirement {
     }
 
     public function get_user_requirement_progress_data(int $userid, \stdClass $requirement): array {
-        $pluginname = get_string('pluginname', 'superbadgesrequirement_activitycompletion');
+        $pluginname = get_string('pluginname', 'superbadgesrequirement_coursecompletion');
 
         $progress = $this->get_user_requirement_progress($userid, $requirement);
 
-        $activityname = $this->get_activity_name($requirement->target);
+        $coursename = $this->get_course_name($requirement->target);
 
-        $progresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_activitycompletion', $activityname);
+        $progresdesc = get_string('requirementprogresdesc', 'superbadgesrequirement_coursecompletion', $coursename);
 
         return [
             'pluginname' => $pluginname,
@@ -87,9 +87,11 @@ class requirement extends \local_superbadges\requirement {
         ];
     }
 
-    private function get_activity_name(int $cmid): string {
-        list(, $coursemodule) = get_course_and_cm_from_cmid($cmid);
+    private function get_course_name(int $courseid): string {
+        global $DB;
 
-        return format_string($coursemodule->name);
+        $course = $DB->get_record('course', ['id' => $courseid], 'id, fullname', MUST_EXIST);
+
+        return format_string($course->fullname);
     }
 }
