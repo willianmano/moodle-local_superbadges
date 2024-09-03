@@ -4,7 +4,7 @@
     {{#badges}}
         <div class="card">
             <div class="d-flex align-items-center p-2 my-2">
-                <img src="{{{badgeimage}}}" alt="{{{name}}}" class="superbadge">
+                <img src="{{{badgeimage}}}" alt="{{{name}}}" class="superbadge {{^awarded}}dimmed{{/awarded}}">
                 <div class="info ml-2 w-100">
                     <h5>{{{name}}}</h5>
                     <p>{{{description}}}</p>
