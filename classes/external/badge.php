@@ -186,13 +186,11 @@ class badge extends external_api {
      * @return external_single_structure
      */
     public static function create_returns() {
-        return new external_single_structure(
-            array(
-                'status' => new external_value(PARAM_TEXT, 'Operation status'),
-                'message' => new external_value(PARAM_RAW, 'Return message'),
-                'data' => new external_value(PARAM_RAW, 'Return data')
-            )
-        );
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'message' => new external_value(PARAM_RAW, 'Return message'),
+            'data' => new external_value(PARAM_RAW, 'Return data')
+        ]);
     }
 
     /**
@@ -267,13 +265,11 @@ class badge extends external_api {
      * @return external_single_structure
      */
     public static function edit_returns() {
-        return new external_single_structure(
-            array(
-                'status' => new external_value(PARAM_TEXT, 'Operation status'),
-                'message' => new external_value(PARAM_RAW, 'Return message'),
-                'data' => new external_value(PARAM_RAW, 'Return data')
-            )
-        );
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'message' => new external_value(PARAM_RAW, 'Return message'),
+            'data' => new external_value(PARAM_RAW, 'Return data')
+        ]);
     }
 
     /**
@@ -283,16 +279,14 @@ class badge extends external_api {
      */
     public static function delete_parameters() {
         return new external_function_parameters([
-            'badge' => new external_single_structure([
-                'id' => new external_value(PARAM_INT, 'The badge id', VALUE_REQUIRED)
-            ])
+            'id' => new external_value(PARAM_INT, 'The badge id', VALUE_REQUIRED)
         ]);
     }
 
     /**
      * Delete badge method
      *
-     * @param array $badge
+     * @param int $id
      *
      * @return array
      *
@@ -301,26 +295,30 @@ class badge extends external_api {
      * @throws \invalid_parameter_exception
      * @throws \moodle_exception
      */
-    public static function delete($badge) {
+    public static function delete($id) {
         global $DB, $PAGE;
 
-        self::validate_parameters(self::delete_parameters(), ['badge' => $badge]);
+        self::validate_parameters(self::delete_parameters(), ['id' => $id]);
 
-        $badge = (object)$badge;
+        $sql = 'SELECT sb.id, sb.badgeid, b.courseid
+                FROM {local_superbadges_badges} AS sb
+                INNER JOIN {badge} b ON b.id = sb.badgeid
+                WHERE sb.id = :id';
 
-        $badgedb = $DB->get_record('superbadges_badges', ['id' => $badge->id], '*', MUST_EXIST);
+        $badge = $DB->get_record_sql($sql, ['id' => $id]);
 
-        $context = \context_course::instance($badgedb->courseid);
+        $context = \context_course::instance($badge->courseid);
         $PAGE->set_context($context);
 
-        $newbadge = new \core_badges\badge($badgedb->badgeid);
-        $newbadge->delete(false);
+        $mdlbadge = new \core_badges\badge($badge->badgeid);
+        $mdlbadge->delete();
 
-        $DB->delete_records('superbadges_badges', ['id' => $badgedb->id]);
+        $DB->delete_records('local_superbadges_requirements', ['badgeid' => $id]);
+
+        $DB->delete_records('local_superbadges_badges', ['id' => $id]);
 
         return [
-            'status' => 'ok',
-            'message' => get_string('deletebadge_success', 'local_superbadges')
+            'message' => get_string('deletebadge_success', 'local_superbadges'),
         ];
     }
 
@@ -330,12 +328,9 @@ class badge extends external_api {
      * @return external_single_structure
      */
     public static function delete_returns() {
-        return new external_single_structure(
-            array(
-                'status' => new external_value(PARAM_TEXT, 'Operation status'),
-                'message' => new external_value(PARAM_TEXT, 'Return message')
-            )
-        );
+        return new external_single_structure([
+            'message' => new external_value(PARAM_TEXT, 'Return message')
+        ]);
     }
 
     /**

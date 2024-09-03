@@ -85,25 +85,29 @@ define([
         Create.prototype.handleFormSubmissionResponse = function(data) {
             this.modal.hide();
             // We could trigger an event instead.
-            Y.use('moodle-core-formchangechecker', function() {
+            Y.use('moodle-core-formchangechecker', function () {
                 M.core_formchangechecker.reset_form_dirty_state();
             });
 
             var item = JSON.parse(data.data);
 
             var tableLine = $('<tr>' +
-                '<th scope="row">'+item.id+'</th>' +
-                '<td>'+item.name+'</td>' +
-                '<td style="width: 160px; text-align: center;">' +
-                '<a href="'+Config.wwwroot+'/local/superbadges/badgecriterias.php?id='+item.id+'" data-id="'+item.id+'" ' +
-                    'class="btn btn-primary btn-sm"><i class="fa fa-cog"></i></a>' +
-                '</a>' +
-                '<a href="#" data-id="'+item.id+'" data-name="'+item.name+'"' +
-                    'data-courseid="'+item.courseid+'" data-badgeid="'+item.badgeid+'"' +
-                    'class="btn btn-warning btn-sm edit-superbadges-badge">' +
+                '<th scope="row">' + item.id + '</th>' +
+                '<td>' + item.name + '</td>' +
+                '<td style="width: 200px; text-align: center;">' +
+                '<a href="#" data-id="' + item.id + '" class="btn btn-info btn-sm deliver-badge">' +
+                '<i class="fa fa-paper-plane-o"></i>' +
+                '</a> ' +
+                '<a href="' + Config.wwwroot + '/local/superbadges/requirements.php?id=' +
+                    item.id + '" data-id="' + item.id + '" ' +
+                'class="btn btn-primary btn-sm"><i class="fa fa-list"></i></a>' +
+                '</a> ' +
+                '<a href="#" data-id="' + item.id + '" data-name="' + item.name + '"' +
+                'data-courseid="' + item.courseid + '" data-badgeid="' + item.badgeid + '"' +
+                'class="btn btn-warning btn-sm edit-badge">' +
                 '<i class="fa fa-pencil-square-o text-white"></i>' +
                 '</a> ' +
-                '<a href="#" data-id="'+item.id+'" class="btn btn-danger btn-sm delete-superbadges-badge">' +
+                '<a href="#" data-id="' + item.id + '" class="btn btn-danger btn-sm delete-badge">' +
                 '<i class="fa fa-trash-o"></i>' +
                 '</a> ' +
                 '</td>' +
@@ -131,13 +135,13 @@ define([
             });
         };
 
-        Create.prototype.handleFormSubmissionFailure = function(data) {
+        Create.prototype.handleFormSubmissionFailure = function (data) {
             // Oh noes! Epic fail :(
             // Ah wait - this is normal. We need to re-display the form with errors!
             this.modal.setBody(this.getBody(data));
         };
 
-        Create.prototype.submitFormAjax = function(e) {
+        Create.prototype.submitFormAjax = function (e) {
             // We don't want to do a real form submission.
             e.preventDefault();
 
@@ -148,7 +152,7 @@ define([
             // Normally this would happen when the form is submitted, but
             // since we aren't submitting the form normally we need to run client side
             // validation.
-            this.modal.getRoot().find(':input').each(function(index, element) {
+            this.modal.getRoot().find(':input').each(function (index, element) {
                 element.dispatchEvent(changeEvent);
             });
 

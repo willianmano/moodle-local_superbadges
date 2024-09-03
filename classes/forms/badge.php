@@ -37,6 +37,7 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  */
 class badge extends \moodleform {
 
+    // TODO: Alterar para core_form\dynamic_form
     /**
      * Class constructor.
      *

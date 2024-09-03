@@ -109,12 +109,12 @@ class requirement extends external_api {
      */
     public static function delete_parameters() {
         return new external_function_parameters([
-            'id' => new external_value(PARAM_INT, 'The badge id', VALUE_REQUIRED)
+            'id' => new external_value(PARAM_INT, 'The requirement id', VALUE_REQUIRED)
         ]);
     }
 
     /**
-     * Delete badge method
+     * Delete requirement method
      *
      * @param int $id
      *
@@ -145,10 +145,8 @@ class requirement extends external_api {
      * @return external_single_structure
      */
     public static function delete_returns() {
-        return new external_single_structure(
-            array(
-                'message' => new external_value(PARAM_TEXT, 'Return message')
-            )
-        );
+        return new external_single_structure([
+            'message' => new external_value(PARAM_TEXT, 'Return message')
+        ]);
     }
 }

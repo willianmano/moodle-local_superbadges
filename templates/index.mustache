@@ -38,7 +38,9 @@
 </table>
 
 {{#js}}
-    require(['local_superbadges/badge/create'], function(Create) {
+    require(['local_superbadges/badge/create', 'local_superbadges/badge/delete'], function(Create, Delete) {
         Create.init('[data-action=create-badge-modal]', {{{contextid}}}, {{{courseid}}});
+
+        Delete.init('.delete-badge');
     });
 {{/js}}
