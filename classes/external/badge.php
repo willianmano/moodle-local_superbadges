@@ -47,17 +47,16 @@ class badge extends external_api {
      */
     public static function create_parameters() {
         return new external_function_parameters([
-            'contextid' => new external_value(PARAM_INT, 'The context id for the course module'),
-            'course' => new external_value(PARAM_INT, 'The course id'),
-            'jsonformdata' => new external_value(PARAM_RAW, 'The data from the badge form, encoded as a json array')
+            'courseid' => new external_value(PARAM_INT, 'The course id'),
+            'name' => new external_value(PARAM_TEXT, 'The badge name'),
+            'description' => new external_value(PARAM_RAW, 'The badge description'),
+            'image' => new external_value(PARAM_RAW, 'The imagem tmp id'),
         ]);
     }
 
     /**
      * Create badge method
      *
-     * @param int $contextid
-     * @param int $course
      * @param string $jsonformdata
      *
      * @return array
@@ -67,33 +66,24 @@ class badge extends external_api {
      * @throws \invalid_parameter_exception
      * @throws \moodle_exception
      */
-    public static function create($contextid, $course, $jsonformdata) {
+    public static function create($courseid, $name, $description, $image) {
         global $DB, $PAGE, $CFG, $USER, $SITE;
 
         $transaction = $DB->start_delegated_transaction();
 
         try {
             // We always must pass webservice params through validate_parameters.
-            $params = self::validate_parameters(self::create_parameters(),
-                ['contextid' => $contextid, 'course' => $course, 'jsonformdata' => $jsonformdata]);
+            $params = (object) self::validate_parameters(self::create_parameters(), [
+                'courseid' => $courseid,
+                'name' => $name,
+                'description' => $description,
+                'image' => $image
+            ]);
 
-            $context = context::instance_by_id($params['contextid'], MUST_EXIST);
+            $context = \core\context\course::instance($params->courseid);
 
             // We always must call validate_context in a webservice.
             self::validate_context($context);
-
-            $serialiseddata = json_decode($params['jsonformdata']);
-
-            $data = [];
-            parse_str($serialiseddata, $data);
-
-            $mform = new badgeform($data);
-
-            $validateddata = $mform->get_data();
-
-            if (!$validateddata) {
-                throw new \moodle_exception('invalidformdata');
-            }
 
             $now = time();
 
@@ -101,9 +91,9 @@ class badge extends external_api {
             require_once($CFG->libdir . '/badgeslib.php');
 
             $mdlbadge = new \stdClass();
-            $mdlbadge->name = $validateddata->name;
-            $mdlbadge->description = $validateddata->description;
-            $mdlbadge->courseid = $course;
+            $mdlbadge->name = $params->name;
+            $mdlbadge->description = $params->description;
+            $mdlbadge->courseid = $params->courseid;
             $mdlbadge->usercreated = $USER->id;
             $mdlbadge->usermodified = $USER->id;
             $mdlbadge->version = '';
@@ -149,10 +139,10 @@ class badge extends external_api {
 
             $newbadge = new \core_badges\badge($mdlbadgeid);
 
-            badges_process_badge_image($newbadge, $mform->save_temp_file('image'));
+            badges_process_badge_image($newbadge, $params->image);
 
             $superbadge = new \stdClass();
-            $superbadge->courseid = $course;
+            $superbadge->courseid = $params->courseid;
             $superbadge->badgeid = $mdlbadgeid;
             $superbadge->timecreated = time();
             $superbadge->timemodified = time();
@@ -165,18 +155,11 @@ class badge extends external_api {
             $transaction->allow_commit();
 
             return [
-                'status' => 'ok',
                 'message' => get_string('createbadge_success', 'local_superbadges'),
                 'data' => json_encode($superbadge)
             ];
         } catch (\Exception $e) {
-            $transaction->rollback($e);
-
-            return [
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'data' => $e->getCode()
-            ];
+            throw new \Exception($e);
         }
     }
 
@@ -187,7 +170,6 @@ class badge extends external_api {
      */
     public static function create_returns() {
         return new external_single_structure([
-            'status' => new external_value(PARAM_TEXT, 'Operation status'),
             'message' => new external_value(PARAM_RAW, 'Return message'),
             'data' => new external_value(PARAM_RAW, 'Return data')
         ]);

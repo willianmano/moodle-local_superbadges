@@ -35,19 +35,30 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  * @copyright  2024 Willian Mano {@link https://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class badge extends \moodleform {
+class badge extends \core_form\dynamic_form {
+    protected $courseid;
 
-    // TODO: Alterar para core_form\dynamic_form
-    /**
-     * Class constructor.
-     *
-     * @param array $formdata
-     * @param array $customdata
-     */
-    public function __construct($formdata, $customdata = null) {
-        parent::__construct(null, $customdata, 'post',  '', ['class' => 'superbadges-badge-form'], true, $formdata);
+    protected function get_context_for_dynamic_submission(): \context {
+        $this->courseid = $this->_ajaxformdata['courseid'] ?? $this->_ajaxformdata['formdata']['courseid'];
 
-        $this->set_display_vertical();
+        return \core\context\course::instance($this->courseid);
+    }
+
+    protected function check_access_for_dynamic_submission(): void {
+        require_capability('moodle/course:update', \core\context\course::instance($this->courseid));
+    }
+
+    public function set_data_for_dynamic_submission(): void {
+        $this->set_data([]);
+    }
+
+    public function process_dynamic_submission() {
+        return \local_superbadges\external\badge::create(
+            $this->get_data()->courseid,
+            $this->get_data()->name,
+            $this->get_data()->description,
+            $this->save_temp_file('image'),
+        );
     }
 
     /**
@@ -59,9 +70,8 @@ class badge extends \moodleform {
     public function definition() {
         $mform = $this->_form;
 
-        $id = !(empty($this->_customdata['id'])) ? $this->_customdata['id'] : null;
-        $courseid = !(empty($this->_customdata['courseid'])) ? $this->_customdata['courseid'] : null;
-        $name = !(empty($this->_customdata['name'])) ? $this->_customdata['name'] : null;
+        $id = !(empty($this->id)) ? $this->id : null;
+        $courseid = !(empty($this->courseid)) ? $this->courseid : null;
 
         if (!empty($courseid)) {
             $mform->addElement('hidden', 'courseid', $courseid);
@@ -73,9 +83,6 @@ class badge extends \moodleform {
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->setType('name', PARAM_TEXT);
-        if ($name) {
-            $mform->setDefault('name', $name);
-        }
 
         if (!$id) {
             $mform->addElement('textarea', 'description', get_string('description', 'badges'), 'wrap="virtual" rows="8" cols="70"');
@@ -89,26 +96,17 @@ class badge extends \moodleform {
         }
     }
 
-    /**
-     * A bit of custom validation for this form
-     *
-     * @param array $data An assoc array of field=>value
-     * @param array $files An array of files
-     *
-     * @return array
-     *
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
     public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
+        $errors = [];
 
-        $name = isset($data['name']) ? $data['name'] : null;
-
-        if ($this->is_submitted() && (empty($name) || strlen($name) < 3)) {
-            $errors['name'] = get_string('validation:namelen', 'local_superbadges');
+        if (empty($data['name'])) {
+            $errors['name'] = get_string('required');
         }
 
         return $errors;
+    }
+
+    protected function get_page_url_for_dynamic_submission(): \moodle_url {
+        return new \moodle_url('/local/superbadges/index.php', ['id' => $this->courseid]);
     }
 }

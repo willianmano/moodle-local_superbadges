@@ -23,8 +23,7 @@ const openModal = async (method, courseid, badgeid) => {
         saveButtonText: getString('addrequirement', 'local_superbadges'),
         modalConfig: {
             title: getString('addrequirement', 'local_superbadges'),
-        },
-        returnFocus: e.currentTarget
+        }
     });
 
     modal.addEventListener(modal.events.FORM_SUBMITTED, (event) => {
