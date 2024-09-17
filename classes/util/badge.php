@@ -43,6 +43,89 @@ class badge {
         require_once($CFG->libdir . '/badgeslib.php');
     }
 
+    public function create($courseid, $name, $description, $image) {
+        global $DB, $CFG, $USER, $SITE;
+
+        $transaction = $DB->start_delegated_transaction();
+
+        try {
+            $context = \core\context\course::instance($courseid);
+
+            $now = time();
+
+            $mdlbadge = new \stdClass();
+            $mdlbadge->name = $name;
+            $mdlbadge->description = $description;
+            $mdlbadge->courseid = $courseid;
+            $mdlbadge->usercreated = $USER->id;
+            $mdlbadge->usermodified = $USER->id;
+            $mdlbadge->version = '';
+            $mdlbadge->type = BADGE_TYPE_COURSE;
+            $mdlbadge->imageauthorname = '';
+            $mdlbadge->imageauthoremail = '';
+            $mdlbadge->imageauthorurl = '';
+            $mdlbadge->imagecaption = '';
+            $mdlbadge->timecreated = $now;
+            $mdlbadge->timemodified = $now;
+            $mdlbadge->issuerurl = $CFG->wwwroot;
+            $mdlbadge->issuername = $SITE->fullname;
+            $mdlbadge->issuercontact = $CFG->badges_defaultissuercontact;
+
+            $mdlbadge->messagesubject = get_string('messagesubject', 'badges');
+            $mdlbadge->message = get_string('messagebody', 'badges',
+                \html_writer::link($CFG->wwwroot . '/badges/mybadges.php', get_string('managebadges', 'badges')));
+            $mdlbadge->attachment = 1;
+            $mdlbadge->notification = BADGE_MESSAGE_NEVER;
+            $mdlbadge->status = BADGE_STATUS_ACTIVE;
+
+            $mdlbadgeid = $DB->insert_record('badge', $mdlbadge);
+
+            // Add badges criterias.
+            $badgecriteria = new \stdClass();
+
+            $badgecriteria->badgeid = $mdlbadgeid;
+            $badgecriteria->criteriatype = 0;
+            $badgecriteria->method = 1;
+            $badgecriteria->description = '';
+            $badgecriteria->descriptionformat = 1;
+
+            $DB->insert_record('badge_criteria', $badgecriteria);
+
+            $badgecriteria->criteriatype = 2;
+            $badgecriteria->method = 2;
+
+            $DB->insert_record('badge_criteria', $badgecriteria);
+
+            $eventparams = array('objectid' => $mdlbadgeid, 'context' => $context);
+            $event = \core\event\badge_created::create($eventparams);
+            $event->trigger();
+
+            $newbadge = new \core_badges\badge($mdlbadgeid);
+
+            badges_process_badge_image($newbadge, $image);
+
+            $superbadge = new \stdClass();
+            $superbadge->courseid = $courseid;
+            $superbadge->badgeid = $mdlbadgeid;
+            $superbadge->timecreated = time();
+            $superbadge->timemodified = time();
+
+            $superbadgeid = $DB->insert_record('local_superbadges_badges', $superbadge);
+
+            $superbadge->id = $superbadgeid;
+            $superbadge->name = $mdlbadge->name;
+
+            $transaction->allow_commit();
+
+            return [
+                'message' => get_string('createbadge_success', 'local_superbadges'),
+                'data' => json_encode($superbadge)
+            ];
+        } catch (\Exception $e) {
+            throw new \Exception($e);
+        }
+    }
+
     public function get_awarded_course_badges($userid, $courseid, $contextid) {
         $badges = $this->get_course_badges_with_user_award($userid, $courseid, $contextid);
 

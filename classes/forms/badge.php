@@ -53,7 +53,9 @@ class badge extends \core_form\dynamic_form {
     }
 
     public function process_dynamic_submission() {
-        return \local_superbadges\external\badge::create(
+        $badgeutil = new \local_superbadges\util\badge();
+
+        return $badgeutil->create(
             $this->get_data()->courseid,
             $this->get_data()->name,
             $this->get_data()->description,

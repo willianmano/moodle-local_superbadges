@@ -14,26 +14,9 @@
     </tr>
     </thead>
     <tbody>
-    {{#badges}}
-        <tr>
-            <th scope="row">{{{id}}}</th>
-            <td>{{{name}}}</td>
-            <td style="width: 200px; text-align: center;">
-                <a href="#" data-id="{{id}}" class="btn btn-info btn-sm deliver-badge" title="{{#str}}deliver, local_superbadges{{/str}}">
-                    <i class="fa fa-paper-plane-o"></i>
-                </a>
-                <a href="{{{config.wwwroot}}}/local/superbadges/requirements.php?id={{id}}" data-id="{{id}}" class="btn btn-primary btn-sm" title="{{#str}}requirements, local_superbadges{{/str}}">
-                    <i class="fa fa-list"></i>
-                </a>
-                <a href="#" data-id="{{id}}" data-name="{{name}}" data-description="{{description}}" data-courseid="{{courseid}}" data-badgeid="{{badgeid}}" data-type="{{type}}" data-highlight="{{highlight}}"  class="btn btn-warning btn-sm edit-badge" title="{{#str}}editbadge, local_superbadges{{/str}}">
-                    <i class="fa fa-pencil-square-o text-white"></i>
-                </a>
-                <a href="#" data-id="{{id}}" class="btn btn-danger btn-sm delete-badge" title="{{#str}}deletebadge, local_superbadges{{/str}}">
-                    <i class="fa fa-trash-o"></i>
-                </a>
-            </td>
-        </tr>
-    {{/badges}}
+        {{#badges}}
+            {{> local_superbadges/badge_tableline }}
+        {{/badges}}
     </tbody>
 </table>
 
