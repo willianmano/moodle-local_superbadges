@@ -25,14 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'local_superbadges_createbadge' => [
-        'classname' => 'local_superbadges\external\badge',
-        'classpath' => 'local/superbadges/classes/external/badge.php',
-        'methodname' => 'create',
-        'description' => 'Creates a new badge',
-        'type' => 'write',
-        'ajax' => true
-    ],
     'local_superbadges_editbadge' => [
         'classname' => 'local_superbadges\external\badge',
         'classpath' => 'local/superbadges/classes/external/badge.php',

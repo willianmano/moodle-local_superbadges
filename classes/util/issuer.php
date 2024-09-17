@@ -63,13 +63,27 @@ class issuer {
         return $this->deliver_badge($userid, $mdlbadge->id);
     }
 
+    /**
+     * @param int $userid User id
+     * @param int $badgeid Moodle badge id
+     *
+     * @return bool
+     *
+     * @throws \moodle_exception
+     */
     public function user_already_have_badge(int $userid, int $badgeid): bool {
         $badge = new \core_badges\badge($badgeid);
 
         return $badge->is_issued($userid);
     }
 
-    public function check_if_user_can_receive_badge($userid, $requirements): bool {
+    /**
+     * @param int $userid User id
+     * @param array $requirements Superbadge requirements
+     *
+     * @return bool
+     */
+    public function check_if_user_can_receive_badge(int $userid, array $requirements): bool {
         foreach ($requirements as $requirement) {
             $requirementclass = "\superbadgesrequirement_{$requirement->method}\\requirement";
 

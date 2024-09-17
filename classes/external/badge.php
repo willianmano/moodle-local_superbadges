@@ -31,6 +31,7 @@ use core_external\external_single_structure;
 use core_external\external_function_parameters;
 use local_superbadges\forms\badge as badgeform;
 use local_superbadges\observers\badgeissuer;
+use local_superbadges\util\issuer;
 
 /**
  * Badge external api class.
@@ -152,7 +153,7 @@ class badge extends external_api {
                 INNER JOIN {badge} b ON b.id = sb.badgeid
                 WHERE sb.id = :id';
 
-        $badge = $DB->get_record_sql($sql, ['id' => $id]);
+        $badge = $DB->get_record_sql($sql, ['id' => $id], MUST_EXIST);
 
         $context = \context_course::instance($badge->courseid);
         $PAGE->set_context($context);
@@ -187,16 +188,14 @@ class badge extends external_api {
      */
     public static function deliver_parameters() {
         return new external_function_parameters([
-            'badge' => new external_single_structure([
-                'id' => new external_value(PARAM_INT, 'The badge id', VALUE_REQUIRED)
-            ])
+            'id' => new external_value(PARAM_INT, 'The badge id', VALUE_REQUIRED)
         ]);
     }
 
     /**
      * Deliver badge method
      *
-     * @param array $badge
+     * @param int $id
      *
      * @return array
      *
@@ -205,22 +204,25 @@ class badge extends external_api {
      * @throws \invalid_parameter_exception
      * @throws \moodle_exception
      */
-    public static function deliver($badge) {
+    public static function deliver($id) {
         global $DB, $PAGE;
 
-        self::validate_parameters(self::delete_parameters(), ['badge' => $badge]);
+        self::validate_parameters(self::delete_parameters(), ['id' => $id]);
 
-        $badge = (object)$badge;
+        $sql = 'SELECT sb.id, sb.badgeid, b.courseid
+                FROM {local_superbadges_badges} AS sb
+                INNER JOIN {badge} b ON b.id = sb.badgeid
+                WHERE sb.id = :id';
 
-        $superbadge = $DB->get_record('superbadges_badges', ['id' => $badge->id], '*', MUST_EXIST);
+        $superbadge = $DB->get_record_sql($sql, ['id' => $id], MUST_EXIST);
 
-        $badgecriterias = $DB->get_records('superbadges_badges_criterias', ['superbadgeid' => $superbadge->id]);
+        $requirements = $DB->get_records('local_superbadges_requirements', ['badgeid' => $superbadge->id]);
 
-        if (!$badgecriterias) {
+        if (!$requirements) {
             throw new \Exception(get_string('deliverbadge_badgenocriterias', 'local_superbadges'));
         }
 
-        $context = \context_course::instance($superbadge->courseid);
+        $context = \core\context\course::instance($superbadge->courseid);
         $PAGE->set_context($context);
 
         $sql = 'SELECT DISTINCT u.id';
@@ -233,23 +235,23 @@ class badge extends external_api {
 
         $users = $DB->get_records_sql($sql, $params);
 
+        $badgeissuer = new issuer();
         $counter = 0;
         foreach ($users as $user) {
-            if (badgeissuer::user_already_have_badge($user->id, $superbadge->badgeid)) {
+            if ($badgeissuer->user_already_have_badge($user->id, $superbadge->badgeid)) {
                 continue;
             }
 
-            if (!badgeissuer::check_if_user_can_receive_badge($user->id, $badgecriterias)) {
+            if (!$badgeissuer->check_if_user_can_receive_badge($user->id, $requirements)) {
                 continue;
             }
 
-            badgeissuer::deliver_badge($user->id, $superbadge);
+            $badgeissuer->deliver_badge($user->id, $superbadge->badgeid);
 
             $counter++;
         }
 
         return [
-            'status' => 'ok',
             'message' => get_string('deliverbadge_success', 'local_superbadges', $counter)
         ];
     }
@@ -260,11 +262,8 @@ class badge extends external_api {
      * @return external_single_structure
      */
     public static function deliver_returns() {
-        return new external_single_structure(
-            array(
-                'status' => new external_value(PARAM_TEXT, 'Operation status'),
-                'message' => new external_value(PARAM_TEXT, 'Return message')
-            )
-        );
+        return new external_single_structure([
+            'message' => new external_value(PARAM_TEXT, 'Return message')
+        ]);
     }
 }

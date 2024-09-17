@@ -8,3 +8,12 @@ export const deleteBadge = (
         id: id
     },
 }])[0];
+
+export const deliverBadge = (
+    id
+) => fetchAjax([{
+    methodname: 'local_superbadges_deliverbadge',
+    args: {
+        id: id
+    },
+}])[0];

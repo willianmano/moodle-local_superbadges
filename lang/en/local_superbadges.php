@@ -50,4 +50,11 @@ $string['value'] = 'Value';
 $string['addrequirement_success'] = 'Requirement successfully added';
 $string['deleterequirement_success'] = 'Requirement successfully deleted';
 
+$string['deliverbadge_confirm_title'] = 'Are you sure?';
+$string['deliverbadge_confirm_msg'] = 'You are about to deliver this badge to all users that achieved all its criterias. Once delivered, the badge cannot be revoked!';
+$string['deliverbadge_confirm_yes'] = 'Yes, deliver it!';
+$string['deliverbadge_confirm_no'] = 'Cancel';
+$string['deliverbadge_success'] = 'Badge successfully delivered for {$a} users.';
+$string['deliverbadge_badgenocriterias'] = 'It is not possible to deliver this badge because it doesn\'t has a delivery requirement';
+
 $string['coursesuperbadges'] = 'Course super badges';
