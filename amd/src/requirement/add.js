@@ -1,9 +1,9 @@
+import $ from 'jquery';
 import ModalForm from 'core_form/modalform';
 import {get_string as getString} from 'core/str';
 import {addRequirement} from './repository';
 import showNotification from 'local_superbadges/notification';
 
-/* eslint-disable */
 export const init = (trigger, courseid, badgeid) => {
     document.querySelectorAll(trigger).forEach(target =>
         target.addEventListener('click', (event) => {
@@ -31,7 +31,7 @@ const openModal = async (method, courseid, badgeid) => {
     });
 
     modal.show();
-}
+};
 
 const submitFormAjax = async(formdata) => {
     try {
@@ -47,7 +47,7 @@ const submitFormAjax = async(formdata) => {
 
         return false;
     }
-}
+};
 
 const addRequirementToTable = (data) => {
     let target = data.target ??= '';
@@ -67,4 +67,4 @@ const addRequirementToTable = (data) => {
     tableLine
         .appendTo('.table-requirements tbody')
         .hide().fadeIn('normal');
-}
+};
