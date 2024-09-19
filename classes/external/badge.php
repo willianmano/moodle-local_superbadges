@@ -42,85 +42,6 @@ use local_superbadges\util\issuer;
  */
 class badge extends external_api {
     /**
-     * Create badge parameters
-     *
-     * @return external_function_parameters
-     */
-    public static function edit_parameters() {
-        return new external_function_parameters([
-            'contextid' => new external_value(PARAM_INT, 'The context id for the course module'),
-            'jsonformdata' => new external_value(PARAM_RAW, 'The data from the badge form, encoded as a json array')
-        ]);
-    }
-
-    /**
-     * Create badge method
-     *
-     * @param int $contextid
-     * @param string $jsonformdata
-     *
-     * @return array
-     *
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \invalid_parameter_exception
-     * @throws \moodle_exception
-     */
-    public static function edit($contextid, $jsonformdata) {
-        global $DB;
-
-        // We always must pass webservice params through validate_parameters.
-        $params = self::validate_parameters(self::edit_parameters(),
-            ['contextid' => $contextid, 'jsonformdata' => $jsonformdata]);
-
-        $context = context::instance_by_id($params['contextid'], MUST_EXIST);
-
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
-
-        $serialiseddata = json_decode($params['jsonformdata']);
-
-        $data = [];
-        parse_str($serialiseddata, $data);
-
-        $mform = new badgeform($data, $data);
-
-        $validateddata = $mform->get_data();
-
-        if (!$validateddata) {
-            throw new \moodle_exception('invalidformdata');
-        }
-
-        $badge = new \stdClass();
-        $badge->id = $validateddata->id;
-        $badge->name = $validateddata->name;
-        $badge->type = $validateddata->type;
-        $badge->highlight = $validateddata->highlight;
-        $badge->timemodified = time();
-
-        $DB->update_record('superbadges_badges', $badge);
-
-        return [
-            'status' => 'ok',
-            'message' => get_string('editbadge_success', 'local_superbadges'),
-            'data' => json_encode($badge)
-        ];
-    }
-
-    /**
-     * Create badge return fields
-     *
-     * @return external_single_structure
-     */
-    public static function edit_returns() {
-        return new external_single_structure([
-            'status' => new external_value(PARAM_TEXT, 'Operation status'),
-            'message' => new external_value(PARAM_RAW, 'Return message'),
-            'data' => new external_value(PARAM_RAW, 'Return data')
-        ]);
-    }
-
-    /**
      * Delete badge parameters
      *
      * @return external_function_parameters
@@ -159,7 +80,7 @@ class badge extends external_api {
         $PAGE->set_context($context);
 
         $mdlbadge = new \core_badges\badge($badge->badgeid);
-        $mdlbadge->delete();
+        $mdlbadge->delete(false);
 
         $DB->delete_records('local_superbadges_requirements', ['badgeid' => $id]);
 

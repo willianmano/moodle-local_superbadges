@@ -25,14 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'local_superbadges_editbadge' => [
-        'classname' => 'local_superbadges\external\badge',
-        'classpath' => 'local/superbadges/classes/external/badge.php',
-        'methodname' => 'edit',
-        'description' => 'Creates a new badge',
-        'type' => 'write',
-        'ajax' => true
-    ],
     'local_superbadges_deletebadge' => [
         'classname' => 'local_superbadges\external\badge',
         'classpath' => 'local/superbadges/classes/external/badge.php',
@@ -54,14 +46,6 @@ $functions = [
         'classpath' => 'local/superbadges/classes/external/requirement.php',
         'methodname' => 'delete',
         'description' => 'Deletes a badge',
-        'type' => 'write',
-        'ajax' => true
-    ],
-    'local_superbadges_checknotificationbadge' => [
-        'classname' => 'local_superbadges\external\notification',
-        'classpath' => 'local/superbadges/classes/external/notification.php',
-        'methodname' => 'checknotificationbadge',
-        'description' => 'Check if a user has a badge notification pending',
         'type' => 'write',
         'ajax' => true
     ],

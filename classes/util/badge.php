@@ -43,6 +43,46 @@ class badge {
         require_once($CFG->libdir . '/badgeslib.php');
     }
 
+    public function edit($id, $badgeid, $name, $description, $image = null) {
+        global $DB;
+
+        $transaction = $DB->start_delegated_transaction();
+
+        try {
+            $superbadge = $DB->get_record('local_superbadges_badges', ['id' => $id], '*', MUST_EXIST);
+            $superbadge->timemodified = time();
+
+            $DB->update_record('local_superbadges_badges', $superbadge);
+
+            $badge = new \core_badges\badge($badgeid);
+            $badge->name = $name;
+            $badge->description = $description;
+            $badge->save();
+
+            if ($image !== null) {
+                badges_process_badge_image($badge, $image);
+            }
+
+            $transaction->allow_commit();
+
+            $data = [
+                'id' => $superbadge->id,
+                'badgeid' => $badge->id,
+                'name' => $badge->name,
+                'description' => $badge->description,
+            ];
+
+            return [
+                'message' => get_string('editbadge_success', 'local_superbadges'),
+                'data' => json_encode($data)
+            ];
+        } catch (\Exception $e) {
+            $transaction->rollback($e);
+
+            throw new \Exception($e);
+        }
+    }
+
     public function create($courseid, $name, $description, $image) {
         global $DB, $CFG, $USER, $SITE;
 
@@ -122,6 +162,8 @@ class badge {
                 'data' => json_encode($superbadge)
             ];
         } catch (\Exception $e) {
+            $transaction->rollback($e);
+
             throw new \Exception($e);
         }
     }

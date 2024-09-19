@@ -23,10 +23,13 @@
 {{#js}}
     require([
         'local_superbadges/badge/create',
+        'local_superbadges/badge/edit',
         'local_superbadges/badge/deliver',
-        'local_superbadges/badge/delete'
-    ], function(Create, Deliver, Delete) {
+        'local_superbadges/badge/delete',
+    ], function(Create, Edit, Deliver, Delete) {
         Create.init('[data-action=create-badge-modal]', {{{courseid}}});
+
+        Edit.init('.edit-badge');
 
         Deliver.init('.deliver-badge');
 

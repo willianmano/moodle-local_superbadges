@@ -40,7 +40,6 @@ const getStrings = async() => {
     strings.SUCCESS = trasnslatedStrings[4];
 };
 
-/* eslint-disable */
 export const init = (trigger) => {
     getStrings();
 
@@ -74,7 +73,7 @@ const deleteBadgeEntry = async (target) => {
 
         showNotification(message);
     }
-}
+};
 
 const deleteBadgeFromDatabase = async(id) => {
     try {
@@ -86,7 +85,7 @@ const deleteBadgeFromDatabase = async(id) => {
 
         return false;
     }
-}
+};
 
 const deleteBadgeFromTable = (target) => {
     target.closest('tr').fadeOut("normal", function() {
